@@ -11,7 +11,7 @@ import GoogleIcon from '@mui/icons-material/Google';
 // Importamos nuestro componente nuevo
 import Partido from './components/Partido';
 
-const API_KEY = '809819e4fe0f45859a21ebbf40f659e2';
+const API_KEY = import.meta.env.VITE_FOOTBALL_API_KEY;
 const BASE_URL = 'https://cors-anywhere.herokuapp.com/https://api.football-data.org/v4';
 
 function App() {
