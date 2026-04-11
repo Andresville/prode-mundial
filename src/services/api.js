@@ -1,5 +1,5 @@
-const API_KEY = '809819e4fe0f45859a21ebbf40f659e2'; // Pega aquí tu clave
-const BASE_URL = 'https://api.football-data.org/v4';
+const API_KEY = '809819e4fe0f45859a21ebbf40f659e2';
+const BASE_URL = '/api';
 
 export const getDatosMundial = async () => {
   try {

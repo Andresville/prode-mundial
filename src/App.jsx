@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { auth } from './firebase';
 import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from 'firebase/auth';
-import { Container, Button, Typography, Box, AppBar, Toolbar, Avatar, Grid, Card, CardContent, CircularProgress } from '@mui/material';
+import { 
+  Container, Button, Typography, Box, AppBar, Toolbar, 
+  Avatar, Grid, Card, CardContent, CircularProgress 
+} from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
 
-// Componentes y Servicios Propios
+// Componentes y Servicios
 import Partido from './components/Partido';
 import { getDatosMundial } from './services/api';
 import { guardarPrediccion, obtenerMisPredicciones } from './services/db';
@@ -19,23 +22,27 @@ function App() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        cargarDatos(currentUser.uid);
+        cargarTodo(currentUser.uid);
       }
     });
     return () => unsubscribe();
   }, []);
 
-  const cargarDatos = async (userId) => {
+  const cargarTodo = async (userId) => {
     setCargando(true);
-    const [dataPartidos, dataPredicciones] = await Promise.all([
-      getDatosMundial(),
-      obtenerMisPredicciones(userId)
-    ]);
-    
-    // Si la API falla, getDatosMundial ya debería devolver el mock en su servicio
-    setPartidos(dataPartidos.length > 0 ? dataPartidos : partidosDePrueba);
-    setPredicciones(dataPredicciones);
-    setCargando(false);
+    try {
+      const [dataPartidos, dataPredicciones] = await Promise.all([
+        getDatosMundial(),
+        obtenerMisPredicciones(userId)
+      ]);
+      
+      setPartidos(dataPartidos);
+      setPredicciones(dataPredicciones);
+    } catch (error) {
+      console.error("Error cargando datos:", error);
+    } finally {
+      setCargando(false);
+    }
   };
 
   const handleInputChange = async (partidoId, lado, valor, fecha) => {
@@ -51,9 +58,9 @@ function App() {
   };
 
   const grupos = partidos.reduce((acc, p) => {
-    const n = p.group ? p.group.replace('_', ' ') : 'Fase Final';
-    if (!acc[n]) acc[n] = [];
-    acc[n].push(p);
+    const nombreGrupo = p.group ? p.group.replace('_', ' ') : 'Fase Final';
+    if (!acc[nombreGrupo]) acc[nombreGrupo] = [];
+    acc[nombreGrupo].push(p);
     return acc;
   }, {});
 
@@ -61,10 +68,12 @@ function App() {
     <Box sx={{ flexGrow: 1, bgcolor: '#f0f2f5', minHeight: '100vh', pb: 5 }}>
       <AppBar position="sticky" sx={{ backgroundColor: '#1a237e' }}>
         <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold' }}>🏆 PRODE MUNDIAL</Typography>
+          <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
+            🏆 PRODE MUNDIAL
+          </Typography>
           {user && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Avatar src={user.photoURL} sx={{ width: 30, height: 30 }} />
+              <Avatar src={user.photoURL} sx={{ width: 32, height: 32 }} />
               <Button color="inherit" onClick={() => signOut(auth)}>Salir</Button>
             </Box>
           )}
@@ -74,23 +83,37 @@ function App() {
       <Container maxWidth="lg" sx={{ mt: { xs: 2, md: 4 } }}>
         {!user ? (
           <Box sx={{ mt: 10, textAlign: 'center', p: 4, bgcolor: 'white', borderRadius: 3, boxShadow: 3 }}>
-            <Typography variant="h4" sx={{ mb: 2 }}>¡Hola Andres!</Typography>
-            <Button variant="contained" startIcon={<GoogleIcon />} onClick={() => signInWithPopup(auth, new GoogleAuthProvider())}>
+            <Typography variant="h4" sx={{ mb: 2, fontWeight: 'bold', color: '#1a237e' }}>
+              ¡Hola Andres!
+            </Typography>
+            <Button 
+              variant="contained" 
+              startIcon={<GoogleIcon />} 
+              onClick={() => signInWithPopup(auth, new GoogleAuthProvider())}
+              size="large"
+            >
               Entrar con Google
             </Button>
           </Box>
         ) : (
           <Box>
-            <Typography variant="h4" sx={{ mb: 4, fontWeight: 'bold', fontSize: { xs: '1.5rem', md: '2.125rem' } }}>
+            <Typography variant="h4" sx={{ mb: 4, fontWeight: 'bold', textAlign: { xs: 'center', md: 'left' } }}>
               Partidos del Mundial
             </Typography>
-            {cargando ? <CircularProgress sx={{ display: 'block', m: 'auto' }} /> : (
-              <Grid container spacing={2}>
+
+            {cargando ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <Grid container spacing={3}>
                 {Object.keys(grupos).map((nombre) => (
                   <Grid item xs={12} md={6} key={nombre}>
-                    <Card sx={{ borderRadius: 2 }}>
-                      <Box sx={{ bgcolor: '#d32f2f', color: 'white', p: 1, textAlign: 'center' }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>{nombre}</Typography>
+                    <Card sx={{ borderRadius: 2, boxShadow: 2 }}>
+                      <Box sx={{ bgcolor: '#d32f2f', color: 'white', p: 1.5, textAlign: 'center' }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', textTransform: 'uppercase' }}>
+                          {nombre}
+                        </Typography>
                       </Box>
                       <CardContent sx={{ p: 0 }}>
                         {grupos[nombre].map((p, index) => (
@@ -114,12 +137,5 @@ function App() {
     </Box>
   );
 }
-
-// Mover los partidos de prueba a una constante fuera para limpiar el código
-const partidosDePrueba = [
-  { id: 1, group: 'GRUPO A', utcDate: '2026-06-10T18:00:00Z', homeTeam: { name: 'Argentina', crest: 'https://crests.football-data.org/762.png' }, awayTeam: { name: 'Francia', crest: 'https://crests.football-data.org/773.svg' } },
-  { id: 2, group: 'GRUPO A', utcDate: '2026-06-11T20:00:00Z', homeTeam: { name: 'España', crest: 'https://crests.football-data.org/760.svg' }, awayTeam: { name: 'Alemania', crest: 'https://crests.football-data.org/759.svg' } },
-  { id: 3, group: 'GRUPO B', utcDate: '2026-06-12T15:00:00Z', homeTeam: { name: 'Brasil', crest: 'https://crests.football-data.org/764.svg' }, awayTeam: { name: 'Portugal', crest: 'https://crests.football-data.org/765.svg' } }
-];
 
 export default App;
