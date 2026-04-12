@@ -15,15 +15,16 @@ import {
   AppBar,
   Toolbar,
   Avatar,
-  Grid,
   Card,
-  CardContent,
   CircularProgress,
+  Tabs,
+  Tab,
 } from "@mui/material";
 
-import Partido from "./components/Partido";
 import AdminPanel from "./components/AdminPanel";
 import Ranking from "./components/Ranking";
+import CargaResultados from "./components/CargaResultados";
+import ContenedorGrupo from "./components/ContenedorGrupo"; // Asegúrate de crear este archivo
 import { getDatosMundial } from "./services/api";
 import { 
   guardarPrediccion, 
@@ -33,24 +34,35 @@ import {
 } from "./services/db";
 import { crearTorneo, solicitarUnirse } from "./services/torneos";
 
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || "beco2804@gmail.com";
+
 function App() {
   const [user, setUser] = useState(null);
+  const [esAdminMaestro, setEsAdminMaestro] = useState(false);
   const [torneoActivo, setTorneoActivo] = useState(null);
   const [partidos, setPartidos] = useState([]);
   const [predicciones, setPredicciones] = useState({});
   const [resultadosOficiales, setResultadosOficiales] = useState({});
   const [todasLasPreds, setTodasLasPreds] = useState({});
   const [cargando, setCargando] = useState(false);
+  const [tabActual, setTabActual] = useState(0); // 0: Partidos, 1: Posiciones
 
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
+      
       if (currentUser) {
         setCargando(true);
         const dataPartidos = await getDatosMundial();
         setPartidos(dataPartidos);
 
-        // Escuchar torneos en tiempo real
+        if (currentUser.email === ADMIN_EMAIL) {
+          setEsAdminMaestro(true);
+          setCargando(false);
+          return;
+        }
+
+        setEsAdminMaestro(false);
         const q = query(collection(db, "torneos"));
         const unsubTorneo = onSnapshot(q, async (snapshot) => {
           const torneos = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
@@ -63,13 +75,10 @@ function App() {
           if (miTorneo) {
             setTorneoActivo(miTorneo);
             
-            // Si está autorizado, cargamos datos propios y globales del torneo
             if (miTorneo.participantes[currentUser.uid].estado === "autorizado") {
-              // Cargamos mis predicciones para los inputs
               const preds = await obtenerMisPredicciones(currentUser.uid, miTorneo.id);
               setPredicciones(preds);
 
-              // Cargamos datos para el Ranking (Resultados oficiales y todas las predicciones)
               const [resOficiales, todasPreds] = await Promise.all([
                 obtenerResultadosOficiales(),
                 obtenerTodasLasPredicciones(miTorneo.id)
@@ -135,10 +144,19 @@ function App() {
     }
   };
 
-  const grupos = partidos.reduce((acc, p) => {
+  // --- LÓGICA DE AGRUPACIÓN PARA EL NUEVO DISEÑO ---
+  const estructuraGrupos = partidos.reduce((acc, p) => {
     const nombreGrupo = p.group ? p.group.replace("_", " ") : "Fase Final";
-    if (!acc[nombreGrupo]) acc[nombreGrupo] = [];
-    acc[nombreGrupo].push(p);
+    if (!acc[nombreGrupo]) acc[nombreGrupo] = { partidos: [], equipos: [] };
+    
+    acc[nombreGrupo].partidos.push(p);
+    
+    // Guardar equipos únicos para las banderas del encabezado
+    [p.homeTeam, p.awayTeam].forEach(team => {
+      if (!acc[nombreGrupo].equipos.find(e => e.name === team.name)) {
+        acc[nombreGrupo].equipos.push(team);
+      }
+    });
     return acc;
   }, {});
 
@@ -150,101 +168,98 @@ function App() {
     );
 
   return (
-    <Box sx={{ bgcolor: "#f0f2f5", minHeight: "100vh", pb: 5 }}>
-      <AppBar position="sticky" sx={{ bgcolor: "#1a237e" }}>
+    <Box sx={{ bgcolor: "#f4f6f8", minHeight: "100vh", pb: 5 }}>
+      <AppBar position="sticky" sx={{ bgcolor: esAdminMaestro ? "#000" : "#1a237e", boxShadow: 0 }}>
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1, fontWeight: "bold" }}>
-            🏆 PRODE MUNDIAL
+            {esAdminMaestro ? "🛠️ PANEL MAESTRO" : "🏆 PRODE MUNDIAL"}
           </Typography>
           {user && (
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Typography variant="body2" sx={{ display: { xs: "none", sm: "block" } }}>
                 {user.displayName}
               </Typography>
-              <Avatar src={user.photoURL} sx={{ width: 32, height: 32 }} />
-              <Button color="inherit" onClick={() => signOut(auth)}>
-                Salir
-              </Button>
+              <Avatar src={user.photoURL} sx={{ width: 32, height: 32, border: '1px solid white' }} />
+              <Button color="inherit" onClick={() => signOut(auth)}>Salir</Button>
             </Box>
           )}
         </Toolbar>
+
+        {/* --- PESTAÑAS (Solo para jugadores autorizados) --- */}
+        {!esAdminMaestro && torneoActivo?.participantes[user?.uid]?.estado === "autorizado" && (
+          <Tabs 
+            value={tabActual} 
+            onChange={(e, val) => setTabActual(val)} 
+            centered 
+            textColor="inherit"
+            indicatorColor="secondary"
+            sx={{ bgcolor: '#1a237e' }}
+          >
+            <Tab label="⚽ Partidos" />
+            <Tab label="📊 Posiciones" />
+          </Tabs>
+        )}
       </AppBar>
 
-      <Container sx={{ mt: 4 }}>
+      <Container maxWidth="md" sx={{ mt: 4 }}>
         {!user ? (
           <Box sx={{ textAlign: "center", mt: 10 }}>
             <Button variant="contained" size="large" onClick={() => signInWithPopup(auth, new GoogleAuthProvider())}>
               Entrar con Google
             </Button>
           </Box>
+        ) : esAdminMaestro ? (
+          <Box sx={{ maxWidth: 600, mx: "auto" }}>
+            <CargaResultados partidos={partidos} />
+          </Box>
         ) : !torneoActivo ? (
-          <Card sx={{ p: 4, textAlign: "center" }}>
+          <Card sx={{ p: 4, textAlign: "center", borderRadius: 4 }}>
             <Typography variant="h5" gutterBottom>Bienvenido, {user.displayName}</Typography>
-            <Typography variant="body1" sx={{ mb: 3, color: "text.secondary" }}>
-              Crea un torneo o únete a uno de tus amigos.
-            </Typography>
             <Button variant="contained" onClick={handleCrear} sx={{ m: 1 }}>Crear nuevo Torneo</Button>
             <Button variant="outlined" onClick={handleUnirse} sx={{ m: 1 }}>Unirme a uno existente</Button>
           </Card>
         ) : (
           <Box>
-            {/* Panel de control para el administrador */}
-            {torneoActivo.creadorId === user.uid && (
-              <AdminPanel
-                torneoId={torneoActivo.id}
-                participantes={torneoActivo.participantes}
-                partidos={partidos}
-              />
+            {/* Panel de Dueño (Solo se muestra en la pestaña de partidos o arriba de todo) */}
+            {torneoActivo.creadorId === user.uid && tabActual === 0 && (
+              <AdminPanel torneoId={torneoActivo.id} participantes={torneoActivo.participantes} />
             )}
 
-            {/* Manejo de estados de acceso */}
             {torneoActivo.participantes[user.uid]?.estado === "pendiente" ? (
-              <Card sx={{ p: 4, textAlign: "center", bgcolor: "#fff9c4", borderRadius: 3, border: "1px solid #fbc02d" }}>
+              <Card sx={{ p: 4, textAlign: "center", bgcolor: "#fff9c4", borderRadius: 3 }}>
                 <Typography variant="h6">Solicitud Enviada</Typography>
-                <Typography color="text.secondary">
-                  Tu acceso a <b>{torneoActivo.nombre}</b> está pendiente de aprobación por el administrador.
-                </Typography>
+                <Typography>Esperando aprobación en <b>{torneoActivo.nombre}</b>.</Typography>
               </Card>
             ) : (
-              /* PANTALLA DE JUEGO (USUARIOS AUTORIZADOS) */
               <Box>
-                <Typography variant="h4" sx={{ mb: 2, fontWeight: "bold", color: "#1a237e" }}>
-                  Torneo: {torneoActivo.nombre}
-                </Typography>
+                {/* --- CONTENIDO PESTAÑA 0: PARTIDOS --- */}
+                {tabActual === 0 && (
+                  <Box>
+                    <Typography variant="h5" sx={{ mb: 3, fontWeight: "800", color: "#1a237e" }}>
+                      Torneo: {torneoActivo.nombre}
+                    </Typography>
 
-                {/* Mostrar el Ranking arriba de los partidos */}
-                <Ranking 
-                  participantes={torneoActivo.participantes} 
-                  todasLasPredicciones={todasLasPreds} 
-                  resultadosOficiales={resultadosOficiales} 
-                />
+                    {Object.keys(estructuraGrupos).map((nombre) => (
+                      <ContenedorGrupo
+                        key={nombre}
+                        nombre={nombre}
+                        equipos={estructuraGrupos[nombre].equipos}
+                        partidos={estructuraGrupos[nombre].partidos}
+                        predicciones={predicciones}
+                        onInputChange={handleInputChange}
+                      />
+                    ))}
+                  </Box>
+                )}
 
-                <Typography variant="h5" sx={{ mb: 3, fontWeight: "bold" }}>⚽ Pronósticos</Typography>
-
-                <Grid container spacing={3}>
-                  {Object.keys(grupos).map((nombre) => (
-                    <Grid item xs={12} md={6} key={nombre}>
-                      <Card sx={{ borderRadius: 2, boxShadow: 2 }}>
-                        <Box sx={{ bgcolor: "#d32f2f", color: "white", p: 1.5, textAlign: "center" }}>
-                          <Typography variant="subtitle1" sx={{ fontWeight: "bold", textTransform: "uppercase" }}>
-                            {nombre}
-                          </Typography>
-                        </Box>
-                        <CardContent sx={{ p: 0 }}>
-                          {grupos[nombre].map((p, index) => (
-                            <Partido
-                              key={p.id}
-                              partido={p}
-                              predicciones={predicciones}
-                              onInputChange={handleInputChange}
-                              esUltimo={index === grupos[nombre].length - 1}
-                            />
-                          ))}
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  ))}
-                </Grid>
+                {/* --- CONTENIDO PESTAÑA 1: POSICIONES --- */}
+                {tabActual === 1 && (
+                  <Ranking 
+                    participantes={torneoActivo.participantes} 
+                    todasLasPredicciones={todasLasPreds} 
+                    resultadosOficiales={resultadosOficiales} 
+                  />
+                )}
               </Box>
             )}
           </Box>

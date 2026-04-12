@@ -7,111 +7,98 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 const Partido = ({ partido, predicciones, onInputChange, esUltimo }) => {
-  // Estados locales para los inputs
   const [golesL, setGolesL] = useState(predicciones[`${partido.id}_L`] ?? '');
   const [golesV, setGolesV] = useState(predicciones[`${partido.id}_V`] ?? '');
   
-  // Sincronizar con la base de datos al cargar
   useEffect(() => {
     setGolesL(predicciones[`${partido.id}_L`] ?? '');
     setGolesV(predicciones[`${partido.id}_V`] ?? '');
   }, [predicciones, partido.id]);
 
-  // --- LÓGICA DE BLOQUEO (12 HORAS) ---
   const fechaPartido = new Date(partido.utcDate);
-  const ahora = new Date(); // si quiero pobra como se bloquea '2026-06-11T10:00:00Z'
+  const ahora = new Date();
+  const estaBloqueado = (fechaPartido - ahora) / (1000 * 60 * 60) < 12;
 
-  const diferenciaHoras = (fechaPartido - ahora) / (1000 * 60 * 60);
-  const estaBloqueado = diferenciaHoras < 12;
-
-  // --- LÓGICA DE BOTONES ---
-  const valorGuardadoL = predicciones[`${partido.id}_L`];
-  const valorGuardadoV = predicciones[`${partido.id}_V`];
-  
-  const yaTieneDatosEnDB = valorGuardadoL !== undefined && valorGuardadoV !== undefined;
-  
-  // Detectar si el usuario cambió los números respecto a lo que hay en la DB
-  const huboCambios = String(golesL) !== String(valorGuardadoL ?? '') || 
-                     String(golesV) !== String(valorGuardadoV ?? '');
+  const vGL = predicciones[`${partido.id}_L`];
+  const vGV = predicciones[`${partido.id}_V`];
+  const yaTieneDatos = vGL !== undefined && vGV !== undefined;
+  const huboCambios = String(golesL) !== String(vGL ?? '') || String(golesV) !== String(vGV ?? '');
 
   const handleAction = () => {
     if (estaBloqueado) return;
-    
-    if (golesL !== "" && golesV !== "") {
-      onInputChange(partido.id, golesL, golesV, partido.utcDate);
-    } else {
-      alert("Por favor, completa ambos campos.");
-    }
+    if (golesL !== "" && golesV !== "") onInputChange(partido.id, golesL, golesV, partido.utcDate);
   };
 
   return (
     <Box>
-      <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1, opacity: estaBloqueado ? 0.7 : 1 }}>
+      <Box sx={{ 
+        p: { xs: 1, sm: 1.5 }, 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between',
+        opacity: estaBloqueado ? 0.8 : 1,
+        gap: 0.5 // Espacio mínimo para que no se peguen
+      }}>
         
-        {/* Local */}
-        <Box sx={{ flex: 1, textAlign: 'center' }}>
-          <img src={partido.homeTeam.crest} width="25" alt="" />
-          <Typography variant="caption" display="block" sx={{ fontWeight: 'bold' }}>
+        {/* LOCAL (Nombre oculto en móvil muy chico para ahorrar espacio) */}
+        <Box sx={{ width: { xs: '20%', sm: '25%' }, textAlign: 'center' }}>
+          <img src={partido.homeTeam.crest} width="22" alt="" style={{ marginBottom: '2px' }} />
+          <Typography variant="caption" sx={{ display: 'block', fontWeight: 'bold', fontSize: { xs: '0.65rem', sm: '0.75rem' }, lineHeight: 1 }}>
             {partido.homeTeam.name}
           </Typography>
         </Box>
 
-        {/* Centro */}
-        <Box sx={{ flex: 2, textAlign: 'center' }}>
-          <Typography variant="caption" color={estaBloqueado ? "error" : "text.secondary"} sx={{ fontSize: '0.7rem', fontWeight: estaBloqueado ? 'bold' : 'normal' }}>
-            {estaBloqueado ? "🔒 CERRADO" : format(fechaPartido, "dd MMM - HH:mm", { locale: es })}
+        {/* INPUTS Y FECHA */}
+        <Box sx={{ flex: 1, textAlign: 'center' }}>
+          <Typography variant="caption" color={estaBloqueado ? "error" : "text.secondary"} sx={{ fontSize: '0.6rem', display: 'block', mb: 0.5 }}>
+            {estaBloqueado ? "🔒 CERRADO" : format(fechaPartido, "dd/MM HH:mm", { locale: es })}
           </Typography>
           
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1, mt: 0.5 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 0.5 }}>
             <TextField 
-              size="small" 
-              value={golesL}
-              disabled={estaBloqueado}
+              size="small" value={golesL} disabled={estaBloqueado}
               onChange={(e) => setGolesL(e.target.value)}
-              sx={{ width: 40, '& input': { textAlign: 'center', padding: '4px' } }}
+              sx={{ width: 35, '& input': { textAlign: 'center', padding: '4px', fontSize: '0.8rem' } }}
               slotProps={{ htmlInput: { type: 'number', inputMode: 'numeric' } }}
             />
-            <Typography sx={{ fontWeight: 'bold' }}>-</Typography>
+            <Typography sx={{ fontWeight: 'bold', fontSize: '0.8rem' }}>-</Typography>
             <TextField 
-              size="small"
-              value={golesV}
-              disabled={estaBloqueado}
+              size="small" value={golesV} disabled={estaBloqueado}
               onChange={(e) => setGolesV(e.target.value)}
-              sx={{ width: 40, '& input': { textAlign: 'center', padding: '4px' } }}
+              sx={{ width: 35, '& input': { textAlign: 'center', padding: '4px', fontSize: '0.8rem' } }}
               slotProps={{ htmlInput: { type: 'number', inputMode: 'numeric' } }}
             />
           </Box>
         </Box>
 
-        {/* Visitante */}
-        <Box sx={{ flex: 1, textAlign: 'center' }}>
-          <img src={partido.awayTeam.crest} width="25" alt="" />
-          <Typography variant="caption" display="block" sx={{ fontWeight: 'bold' }}>
+        {/* VISITANTE */}
+        <Box sx={{ width: { xs: '20%', sm: '25%' }, textAlign: 'center' }}>
+          <img src={partido.awayTeam.crest} width="22" alt="" style={{ marginBottom: '2px' }} />
+          <Typography variant="caption" sx={{ display: 'block', fontWeight: 'bold', fontSize: { xs: '0.65rem', sm: '0.75rem' }, lineHeight: 1 }}>
             {partido.awayTeam.name}
           </Typography>
         </Box>
 
-        {/* Botón Dinámico */}
-        <Box sx={{ ml: 1 }}>
-          {estaBloqueado ? (
-            <Button variant="outlined" disabled size="small" startIcon={<LockIcon />} sx={{ minWidth: '100px' }}>
-              Cerrado
-            </Button>
-          ) : (
-            <Button
-              variant={huboCambios ? "contained" : "outlined"}
-              color={huboCambios ? "success" : "primary"}
-              size="small"
-              onClick={handleAction}
-              startIcon={yaTieneDatosEnDB && !huboCambios ? <EditIcon /> : <SaveIcon />}
-              sx={{ minWidth: '100px', textTransform: 'none' }}
-            >
-              {huboCambios ? "Guardar" : "Modificar"}
-            </Button>
-          )}
+        {/* BOTÓN (Más pequeño en móvil) */}
+        <Box sx={{ width: { xs: '50px', sm: '90px' }, textAlign: 'right' }}>
+          <Button
+            variant={huboCambios ? "contained" : "outlined"}
+            color={huboCambios ? "success" : "primary"}
+            size="small"
+            onClick={handleAction}
+            disabled={estaBloqueado && !yaTieneDatos}
+            sx={{ 
+              minWidth: { xs: '40px', sm: '85px' }, 
+              fontSize: { xs: '0.6rem', sm: '0.7rem' },
+              p: { xs: '4px 0', sm: '4px 8px' }
+            }}
+          >
+            {estaBloqueado ? <LockIcon fontSize="inherit" /> : (huboCambios ? "OK" : "EDIT")}
+          </Button>
         </Box>
+
       </Box>
-      {!esUltimo && <Divider sx={{ opacity: 0.3 }} />}
+      {!esUltimo && <Divider sx={{ mx: 2, opacity: 0.5 }} />}
     </Box>
   );
 };

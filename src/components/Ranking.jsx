@@ -40,13 +40,6 @@ const Ranking = ({ participantes, todasLasPredicciones, resultadosOficiales }) =
       <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>📊 Posiciones del Grupo</Typography>
       <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
         <CardContent sx={{ p: 0 }}>
-          {/* Encabezado de la tabla */}
-          <Grid container sx={{ px: 2, py: 1.5, bgcolor: '#f5f5f5', borderBottom: '2px solid #eee', fontWeight: 'bold' }}>
-            <Grid item xs={2}>Pos</Grid>
-            <Grid item xs={7}>Jugador</Grid>
-            <Grid item xs={3} sx={{ textAlign: 'center' }}>Pts</Grid>
-          </Grid>
-
           {/* Lista de jugadores */}
           {rankingOrdenado.map((u, i) => (
             <Grid 
