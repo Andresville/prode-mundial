@@ -27,11 +27,11 @@ import Header from "./components/Header";
 import LoginScreen from "./components/LoginScreen";
 
 import { getDatosMundial } from "./services/api";
-import { 
-  guardarPrediccion, 
-  obtenerMisPredicciones, 
-  obtenerResultadosOficiales, 
-  obtenerTodasLasPredicciones 
+import {
+  guardarPrediccion,
+  obtenerMisPredicciones,
+  obtenerResultadosOficiales,
+  obtenerTodasLasPredicciones,
 } from "./services/db";
 import { crearTorneo, solicitarUnirse } from "./services/torneos";
 
@@ -46,12 +46,12 @@ function App() {
   const [resultadosOficiales, setResultadosOficiales] = useState({});
   const [todasLasPreds, setTodasLasPreds] = useState({});
   const [cargando, setCargando] = useState(false);
-  const [tabActual, setTabActual] = useState(0); // 0: Partidos, 1: Posiciones
+  const [tabActual, setTabActual] = useState("partidos");
 
   useEffect(() => {
     const unsubAuth = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-      
+
       if (currentUser) {
         setCargando(true);
         const dataPartidos = await getDatosMundial();
@@ -75,14 +75,19 @@ function App() {
 
           if (miTorneo) {
             setTorneoActivo(miTorneo);
-            
-            if (miTorneo.participantes[currentUser.uid].estado === "autorizado") {
-              const preds = await obtenerMisPredicciones(currentUser.uid, miTorneo.id);
+
+            if (
+              miTorneo.participantes[currentUser.uid].estado === "autorizado"
+            ) {
+              const preds = await obtenerMisPredicciones(
+                currentUser.uid,
+                miTorneo.id,
+              );
               setPredicciones(preds);
 
               const [resOficiales, todasPreds] = await Promise.all([
                 obtenerResultadosOficiales(),
-                obtenerTodasLasPredicciones(miTorneo.id)
+                obtenerTodasLasPredicciones(miTorneo.id),
               ]);
               setResultadosOficiales(resOficiales);
               setTodasLasPreds(todasPreds);
@@ -127,6 +132,11 @@ function App() {
     }
   };
 
+  const handleLogout = async () => {
+    await auth.signOut();
+    setUser(null); // Esto limpia el usuario y te manda al Login
+  };
+
   const handleInputChange = async (partidoId, golesL, golesV, fecha) => {
     const nuevasPredicciones = {
       ...predicciones,
@@ -145,18 +155,20 @@ function App() {
     );
 
     if (!exito) {
-      alert("No se pudo guardar. Recuerda que solo puedes editar hasta 12hs antes del partido.");
+      alert(
+        "No se pudo guardar. Recuerda que solo puedes editar hasta 12hs antes del partido.",
+      );
     }
   };
 
   const estructuraGrupos = partidos.reduce((acc, p) => {
     const nombreGrupo = p.group ? p.group.replace("_", " ") : "Fase Final";
     if (!acc[nombreGrupo]) acc[nombreGrupo] = { partidos: [], equipos: [] };
-    
+
     acc[nombreGrupo].partidos.push(p);
-    
-    [p.homeTeam, p.awayTeam].forEach(team => {
-      if (!acc[nombreGrupo].equipos.find(e => e.name === team.name)) {
+
+    [p.homeTeam, p.awayTeam].forEach((team) => {
+      if (!acc[nombreGrupo].equipos.find((e) => e.name === team.name)) {
         acc[nombreGrupo].equipos.push(team);
       }
     });
@@ -165,7 +177,14 @@ function App() {
 
   if (cargando)
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
         <CircularProgress size={60} thickness={4} />
       </Box>
     );
@@ -176,33 +195,54 @@ function App() {
         <LoginScreen onLogin={handleLogin} />
       ) : (
         <>
-          <Header 
-            user={user} 
-            esAdminMaestro={esAdminMaestro} 
+          <Header
+            user={user}
+            onLogout={handleLogout}
+            esAdminMaestro={esAdminMaestro}
             torneoActivo={torneoActivo}
             tabActual={tabActual}
             setTabActual={setTabActual}
+            view={tabActual}
+            setView={setTabActual}
           />
-          
+
           <Container maxWidth="md" sx={{ mt: 4 }}>
             {esAdminMaestro ? (
               <Box sx={{ maxWidth: 600, mx: "auto" }}>
                 <CargaResultados partidos={partidos} />
               </Box>
             ) : !torneoActivo ? (
-              <Card sx={{ p: 4, textAlign: "center", borderRadius: 4, boxShadow: "0 10px 30px rgba(0,0,0,0.05)" }}>
-                <Typography variant="h4" sx={{ fontWeight: 800, mb: 1 }}>¡Ya falta poco!</Typography>
+              <Card
+                sx={{
+                  p: 4,
+                  textAlign: "center",
+                  borderRadius: 4,
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.05)",
+                }}
+              >
+                <Typography variant="h4" sx={{ fontWeight: 800, mb: 1 }}>
+                  ¡Ya falta poco!
+                </Typography>
                 <Typography color="text.secondary" sx={{ mb: 4 }}>
-                  Creá tu propio torneo o pedí el código a tus amigos para empezar a jugar.
+                  Creá tu propio torneo o pedí el código a tus amigos para
+                  empezar a jugar.
                 </Typography>
                 <Grid container spacing={2} justifyContent="center">
                   <Grid item>
-                    <Button variant="contained" onClick={handleCrear} sx={{ px: 4, py: 1.5, borderRadius: 2 }}>
+                    <Button
+                      variant="contained"
+                      onClick={handleCrear}
+                      sx={{ px: 4, py: 1.5, borderRadius: 2 }}
+                    >
                       Crear nuevo Torneo
                     </Button>
                   </Grid>
                   <Grid item>
-                    <Button variant="outlined" onClick={handleUnirse} sx={{ px: 4, py: 1.5, borderRadius: 2 }}>
+                    <Button
+                      variant="outlined"
+                      onClick={handleUnirse}
+                      sx={{ px: 4, py: 1.5, borderRadius: 2 }}
+                    >
                       Unirme con código
                     </Button>
                   </Grid>
@@ -210,20 +250,39 @@ function App() {
               </Card>
             ) : (
               <Box>
-                {torneoActivo.creadorId === user.uid && tabActual === 0 && (
-                  <AdminPanel torneoId={torneoActivo.id} participantes={torneoActivo.participantes} />
+                {torneoActivo.creadorId === user.uid && tabActual === "partidos" && (
+                  <AdminPanel
+                    torneoId={torneoActivo.id}
+                    participantes={torneoActivo.participantes}
+                  />
                 )}
 
-                {torneoActivo.participantes[user.uid]?.estado === "pendiente" ? (
-                  <Card sx={{ p: 4, textAlign: "center", bgcolor: "#fff9c4", borderRadius: 3, boxShadow: 2 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Solicitud Enviada</Typography>
-                    <Typography>Esperando aprobación en <b>{torneoActivo.nombre}</b>.</Typography>
+                {torneoActivo.participantes[user.uid]?.estado ===
+                "pendiente" ? (
+                  <Card
+                    sx={{
+                      p: 4,
+                      textAlign: "center",
+                      bgcolor: "#fff9c4",
+                      borderRadius: 3,
+                      boxShadow: 2,
+                    }}
+                  >
+                    <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                      Solicitud Enviada
+                    </Typography>
+                    <Typography>
+                      Esperando aprobación en <b>{torneoActivo.nombre}</b>.
+                    </Typography>
                   </Card>
                 ) : (
                   <Box>
-                    {tabActual === 0 && (
+                    {tabActual === "partidos" && (
                       <Box>
-                        <Typography variant="h5" sx={{ mb: 3, fontWeight: "800", color: "#1a237e" }}>
+                        <Typography
+                          variant="h5"
+                          sx={{ mb: 3, fontWeight: "800", color: "#1a237e" }}
+                        >
                           Torneo: {torneoActivo.nombre}
                         </Typography>
 
@@ -240,11 +299,11 @@ function App() {
                       </Box>
                     )}
 
-                    {tabActual === 1 && (
-                      <Ranking 
-                        participantes={torneoActivo.participantes} 
-                        todasLasPredicciones={todasLasPreds} 
-                        resultadosOficiales={resultadosOficiales} 
+                    {tabActual === "ranking" && (
+                      <Ranking
+                        participantes={torneoActivo.participantes}
+                        todasLasPredicciones={todasLasPreds}
+                        resultadosOficiales={resultadosOficiales}
                       />
                     )}
                   </Box>
