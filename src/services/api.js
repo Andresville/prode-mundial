@@ -1,4 +1,4 @@
-const API_KEY = '809819e4fe0f45859a21ebbf40f659e2';
+const API_KEY = import.meta.env.VITE_FOOTBALL_API_KEY;
 const BASE_URL = '/api';
 
 export const getDatosMundial = async () => {
