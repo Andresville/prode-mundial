@@ -3,7 +3,6 @@ const BASE_URL = '/api';
 
 export const getDatosMundial = async () => {
   try {
-    // WC es el código para la World Cup (Mundial)
     const response = await fetch(`${BASE_URL}/competitions/WC/matches`, {
       headers: { 'X-Auth-Token': API_KEY }
     });

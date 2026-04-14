@@ -4,7 +4,6 @@ import Partido from './Partido';
 const ContenedorGrupo = ({ nombre, equipos, partidos, predicciones, onInputChange }) => {
   return (
     <Card sx={{ mb: 3, borderRadius: 2, overflow: 'hidden', boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
-      {/* Encabezado Compacto */}
       <Box sx={{ 
         bgcolor: '#1a237e', 
         color: 'white', 
@@ -18,8 +17,7 @@ const ContenedorGrupo = ({ nombre, equipos, partidos, predicciones, onInputChang
         <Typography variant="subtitle1" sx={{ fontWeight: 'bold', textTransform: 'uppercase' }}>
           {nombre}
         </Typography>
-        
-        {/* Contenedor de Banderas Uniforme */}
+
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
           {equipos.map((eq) => (
             <Box 
@@ -43,7 +41,6 @@ const ContenedorGrupo = ({ nombre, equipos, partidos, predicciones, onInputChang
         </Box>
       </Box>
 
-      {/* Cuerpo de Partidos */}
       <Box sx={{ bgcolor: 'white' }}>
         {partidos.map((p, index) => (
           <Partido

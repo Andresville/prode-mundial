@@ -1,8 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Box, Typography, TextField, Divider, Button } from '@mui/material';
-import SaveIcon from '@mui/icons-material/Save';
-import EditIcon from '@mui/icons-material/Edit';
-import LockIcon from '@mui/icons-material/Lock';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -37,20 +34,24 @@ const Partido = ({ partido, predicciones, onInputChange, esUltimo }) => {
         alignItems: 'center', 
         justifyContent: 'space-between',
         opacity: estaBloqueado ? 0.8 : 1,
-        gap: 0.5 // Espacio mínimo para que no se peguen
+        gap: 0.5
       }}>
         
-        {/* LOCAL (Nombre oculto en móvil muy chico para ahorrar espacio) */}
         <Box sx={{ width: { xs: '20%', sm: '25%' }, textAlign: 'center' }}>
           <img src={partido.homeTeam.crest} width="22" alt="" style={{ marginBottom: '2px' }} />
-          <Typography variant="caption" sx={{ display: 'block', fontWeight: 'bold', fontSize: { xs: '0.65rem', sm: '0.75rem' }, lineHeight: 1 }}>
+          <Typography variant="caption"
+           sx={{ display: 'block', 
+           fontWeight: 'bold', 
+           fontSize: { xs: '0.65rem', sm: '0.75rem' }, 
+           lineHeight: 1 }}>
             {partido.homeTeam.name}
           </Typography>
         </Box>
 
-        {/* INPUTS Y FECHA */}
         <Box sx={{ flex: 1, textAlign: 'center' }}>
-          <Typography variant="caption" color={estaBloqueado ? "error" : "text.secondary"} sx={{ fontSize: '0.6rem', display: 'block', mb: 0.5 }}>
+          <Typography variant="caption"
+          color={estaBloqueado ? "error" : "text.secondary"} 
+          sx={{ fontSize: '0.6rem', display: 'block', mb: 0.5 }}>
             {estaBloqueado ? "🔒 CERRADO" : format(fechaPartido, "dd/MM HH:mm", { locale: es })}
           </Typography>
           
@@ -71,15 +72,17 @@ const Partido = ({ partido, predicciones, onInputChange, esUltimo }) => {
           </Box>
         </Box>
 
-        {/* VISITANTE */}
         <Box sx={{ width: { xs: '20%', sm: '25%' }, textAlign: 'center' }}>
           <img src={partido.awayTeam.crest} width="22" alt="" style={{ marginBottom: '2px' }} />
-          <Typography variant="caption" sx={{ display: 'block', fontWeight: 'bold', fontSize: { xs: '0.65rem', sm: '0.75rem' }, lineHeight: 1 }}>
+          <Typography variant="caption" 
+          sx={{ display: 'block', 
+          fontWeight: 'bold', 
+          fontSize: { xs: '0.65rem', sm: '0.75rem' }, 
+          lineHeight: 1 }}>
             {partido.awayTeam.name}
           </Typography>
         </Box>
 
-        {/* BOTÓN (Más pequeño en móvil) */}
         <Box sx={{ width: { xs: '50px', sm: '90px' }, textAlign: 'right' }}>
           <Button
             variant={huboCambios ? "contained" : "outlined"}

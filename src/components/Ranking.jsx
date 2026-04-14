@@ -3,19 +3,16 @@ import { calcularPuntos } from '../services/db';
 
 const Ranking = ({ participantes, todasLasPredicciones, resultadosOficiales }) => {
   
-  // 1. Procesamos los datos para obtener el puntaje real de cada uno
   const rankingData = Object.entries(participantes || {}).map(([uid, info]) => {
     let totalPuntos = 0;
     const userPreds = todasLasPredicciones[uid] || {};
 
-    // Recorremos los resultados oficiales que cargó el admin
     Object.values(resultadosOficiales).forEach((resReal) => {
       const predUsuario = {
         golesL: userPreds[`${resReal.partidoId}_L`],
         golesV: userPreds[`${resReal.partidoId}_V`]
       };
 
-      // Si el usuario cargó ambos goles, calculamos sus puntos
       if (predUsuario.golesL !== undefined && predUsuario.golesV !== undefined) {
         totalPuntos += calcularPuntos(predUsuario, {
           golesL: resReal.golesLocal,
@@ -32,7 +29,6 @@ const Ranking = ({ participantes, todasLasPredicciones, resultadosOficiales }) =
     };
   });
 
-  // 2. Ordenamos de mayor a menor puntaje
   const rankingOrdenado = rankingData.sort((a, b) => b.puntos - a.puntos);
 
   return (
@@ -40,7 +36,6 @@ const Ranking = ({ participantes, todasLasPredicciones, resultadosOficiales }) =
       <Typography variant="h5" sx={{ mb: 2, fontWeight: 'bold' }}>📊 Posiciones del Grupo</Typography>
       <Card sx={{ borderRadius: 3, boxShadow: 3 }}>
         <CardContent sx={{ p: 0 }}>
-          {/* Lista de jugadores */}
           {rankingOrdenado.map((u, i) => (
             <Grid 
               container 
@@ -50,7 +45,7 @@ const Ranking = ({ participantes, todasLasPredicciones, resultadosOficiales }) =
                 py: 1.5, 
                 alignItems: 'center', 
                 borderBottom: i === rankingOrdenado.length - 1 ? 'none' : '1px solid #eee',
-                bgcolor: i === 0 ? 'rgba(255, 215, 0, 0.05)' : 'transparent' // Fondo sutil al 1°
+                bgcolor: i === 0 ? 'rgba(255, 215, 0, 0.05)' : 'transparent'
               }}
             >
               <Grid item xs={2}>

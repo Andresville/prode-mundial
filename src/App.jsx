@@ -269,8 +269,11 @@ function App() {
                   <Box>
                     {tabActual === "partidos" && (
                       <Box>
-                        <Typography variant="h5" sx={{ mb: 3, fontWeight: "800", color: "#1a237e" }}>
+                        <Typography variant="h4" sx={{ mb: 3, fontWeight: "800", color: "#1a237e" }}>
                           Torneo: {torneoActivo.nombre}
+                        </Typography>
+                        <Typography variant="h5" sx={{ mb: 3, fontWeight: "400", color: "#1a237e" }}>
+                          Codigo Acceso: {torneoActivo.codigoAcceso}
                         </Typography>
 
                         {Object.keys(estructuraGrupos).map((nombre) => (

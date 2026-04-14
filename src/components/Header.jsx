@@ -145,3 +145,4 @@ const Header = ({ user, onLogout, view, setView }) => {
 };
 
 export default Header;
+

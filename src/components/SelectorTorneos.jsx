@@ -1,7 +1,7 @@
 import { Box, Paper, Typography, Button, List, ListItem, ListItemButton, ListItemText, Divider, Container } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import GroupAddIcon from '@mui/icons-material/GroupAdd';
-import copaImg from "../assets/foto login.jpg"; // Misma imagen que el login
+import copaImg from "../assets/foto login.jpg";
 
 const SelectorTorneos = ({ torneos, onSeleccionar, onCrear, onUnirse, user }) => {
   return (
@@ -58,14 +58,11 @@ const SelectorTorneos = ({ torneos, onSeleccionar, onCrear, onUnirse, user }) =>
           <Typography variant="body2" sx={{ mb: 3, opacity: 0.8, fontWeight: 300 }}>
             Elegí tu competencia o sumate a una nueva.
           </Typography>
-
-          {/* Lista de torneos con Scroll estético si hay muchos */}
           <List 
             sx={{ 
               mb: 2, 
               maxHeight: '300px', 
               overflowY: 'auto',
-              // Custom Scrollbar para que no rompa la estética
               '&::-webkit-scrollbar': { width: '6px' },
               '&::-webkit-scrollbar-thumb': { background: 'rgba(255,215,0,0.3)', borderRadius: '10px' }
             }}

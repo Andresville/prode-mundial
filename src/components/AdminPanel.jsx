@@ -33,3 +33,4 @@ const AdminPanel = ({ torneoId, participantes }) => {
 
 export default AdminPanel;
 
+

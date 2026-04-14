@@ -8,9 +8,6 @@ import {
   where,
 } from "firebase/firestore";
 
-/**
- * Guarda la predicción de un usuario dentro de la subcolección de un torneo específico.
- */
 export const guardarPrediccion = async (
   userId,
   torneoId,
@@ -19,7 +16,6 @@ export const guardarPrediccion = async (
   golesV,
   fechaPartido,
 ) => {
-  // Regla de las 12 horas: no permite guardar si falta poco para el partido
   const doceHoras = 12 * 60 * 60 * 1000;
   if (new Date(fechaPartido) - new Date() < doceHoras) {
     console.warn("Bloqueado: faltan menos de 12hs para el partido.");
@@ -27,7 +23,6 @@ export const guardarPrediccion = async (
   }
 
   try {
-    // La ruta es: torneos -> {idTorneo} -> predicciones -> {userId_idPartido}
     const docRef = doc(
       db,
       "torneos",
@@ -49,9 +44,6 @@ export const guardarPrediccion = async (
   }
 };
 
-/**
- * Recupera todas las predicciones de un usuario para un torneo específico.
- */
 export const obtenerMisPredicciones = async (userId, torneoId) => {
   try {
     const colRef = collection(db, "torneos", torneoId, "predicciones");
@@ -61,7 +53,6 @@ export const obtenerMisPredicciones = async (userId, torneoId) => {
     const preds = {};
     snap.forEach((doc) => {
       const data = doc.data();
-      // Armamos el objeto con el formato que usa el estado 'predicciones' en App.jsx
       preds[`${data.partidoId}_L`] = data.golesLocal;
       preds[`${data.partidoId}_V`] = data.golesVisitante;
     });
@@ -72,36 +63,27 @@ export const obtenerMisPredicciones = async (userId, torneoId) => {
   }
 };
 
-/**
- * Lógica de Puntos:
- * 1 punto por tendencia (ganador/empate)
- * +0.5 puntos por resultado exacto.
- */
 export const calcularPuntos = (pred, real) => {
   if (!real || pred.golesL === undefined || pred.golesV === undefined) return 0;
 
   let puntos = 0;
 
-  // Calculamos tendencia (Local, Visitante o Empate)
   const tendenciaPred =
     pred.golesL > pred.golesV ? "L" : pred.golesL < pred.golesV ? "V" : "E";
   const tendenciaReal =
     real.golesL > real.golesV ? "L" : real.golesL < real.golesV ? "V" : "E";
 
-  // 1. Acierto de ganador o empate
   if (tendenciaPred === tendenciaReal) {
     puntos += 1;
 
-    // 2. Acierto de resultado exacto (bono de 0.5)
     if (pred.golesL === real.golesL && pred.golesV === real.golesV) {
-      puntos += 0.5;
+      puntos += 1;
     }
   }
 
   return puntos;
 };
 
-// Guardar el resultado oficial del partido (Solo Admin)
 export const guardarResultadoOficial = async (partidoId, golesL, golesV) => {
   try {
     const docRef = doc(db, "resultados_oficiales", String(partidoId));
@@ -118,7 +100,6 @@ export const guardarResultadoOficial = async (partidoId, golesL, golesV) => {
   }
 };
 
-// Obtener todos los resultados oficiales para calcular el ranking
 export const obtenerResultadosOficiales = async () => {
   const colRef = collection(db, "resultados_oficiales");
   const snap = await getDocs(colRef);
@@ -148,3 +129,4 @@ export const obtenerTodasLasPredicciones = async (torneoId) => {
     return {};
   }
 };
+

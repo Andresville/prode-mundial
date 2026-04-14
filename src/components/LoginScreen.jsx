@@ -1,12 +1,11 @@
 import { Box, Button, Typography, Container, Paper } from "@mui/material";
 import GoogleIcon from '@mui/icons-material/Google';
-import copaImg from "../assets/foto login.jpg"; // Asegúrate de que la ruta sea correcta
+import copaImg from "../assets/foto login.jpg";
 
 const LoginScreen = ({ onLogin }) => {
   return (
     <Box 
       sx={{ 
-        // Usamos fixed y 100vh/100vw para anular cualquier margen del body o padres
         position: 'fixed',
         top: 0,
         left: 0,
@@ -15,7 +14,6 @@ const LoginScreen = ({ onLogin }) => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        // Fondo GRIS de base para que no exista el blanco
         backgroundColor: '#333', 
         backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.4)), url(${copaImg})`,
         backgroundSize: 'cover',
@@ -31,7 +29,6 @@ const LoginScreen = ({ onLogin }) => {
             p: { xs: 4, md: 5 }, 
             textAlign: 'center', 
             borderRadius: 6, 
-            // Efecto Glassmorphism
             background: 'rgba(255, 255, 255, 0.12)', 
             backdropFilter: 'blur(15px)',
             border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -39,7 +36,6 @@ const LoginScreen = ({ onLogin }) => {
             color: '#fff'
           }}
         >
-          {/* Logo o Título con estilo Pro */}
           <Typography 
             variant="h3" 
             sx={{ 

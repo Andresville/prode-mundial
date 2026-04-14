@@ -4,9 +4,7 @@ import {
   query, where, getDocs 
 } from 'firebase/firestore';
 
-// CREAR TORNEO: El administrador se auto-autoriza aquí
 export const crearTorneo = async (user, nombreTorneo) => {
-  // 1. Verificar si el nombre ya existe
   const q = query(collection(db, "torneos"), where("nombre", "==", nombreTorneo));
   const snap = await getDocs(q);
   
@@ -34,7 +32,6 @@ export const crearTorneo = async (user, nombreTorneo) => {
   return { id: docRef.id, codigo };
 };
 
-// SOLICITAR UNIRSE: (Se mantiene igual, entran como pendiente)
 export const solicitarUnirse = async (user, codigo) => {
   const q = query(collection(db, "torneos"), where("codigoAcceso", "==", codigo));
   const snap = await getDocs(q);
@@ -55,7 +52,6 @@ export const solicitarUnirse = async (user, codigo) => {
   return torneoDoc.id;
 };
 
-// GESTIONAR: Para aceptar o rechazar
 export const gestionarParticipante = async (torneoId, participanteId, nuevoEstado, datosActuales) => {
   const torneoRef = doc(db, "torneos", torneoId);
   await updateDoc(torneoRef, {
@@ -65,3 +61,4 @@ export const gestionarParticipante = async (torneoId, participanteId, nuevoEstad
     }
   });
 };
+
