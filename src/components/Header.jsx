@@ -7,13 +7,11 @@ import {
   Container,
   Tab,
   Tabs,
-  IconButton,
   Button,
 } from "@mui/material";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LeaderboardIcon from "@mui/icons-material/Leaderboard";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
-import copaImg from "../assets/imagen copa.svg";
 
 const Header = ({ user, onLogout, view, setView }) => {
   const handleTabChange = (event, newValue) => {
@@ -27,33 +25,32 @@ const Header = ({ user, onLogout, view, setView }) => {
       position="sticky"
       elevation={0}
       sx={{
-        background: "rgba(88, 88, 180, 0.95)",
-        backdropFilter: "blur(15px)",
+        background: "rgba(255, 255, 255, 0.05)", 
+        backdropFilter: "blur(20px)",
         borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+        boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)",
       }}
     >
-      <Container maxWidth="xl">
+      <Container maxWidth="lg">
         <Toolbar
           disableGutters
-          sx={{ justifyContent: "space-between", minHeight: "50px" }}
+          sx={{ 
+            justifyContent: "space-between", 
+            minHeight: { xs: "60px", md: "70px" },
+            px: { xs: 1, md: 0 }
+          }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <Box
-              component="img"
-              src={copaImg}
-              sx={{
-                height: 38,
-                filter: "drop-shadow(0 0 5px rgba(255,215,0,0.4))",
-              }}
-            />
             <Typography
               variant="h6"
               sx={{
                 fontWeight: 900,
+                fontSize: { xs: '1.1rem', md: '1.5rem' },
                 background: "linear-gradient(to bottom, #ffffff, #ffd700)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 textTransform: "uppercase",
+                letterSpacing: -0.5
               }}
             >
               PRODE MUNDIAL
@@ -61,67 +58,74 @@ const Header = ({ user, onLogout, view, setView }) => {
           </Box>
 
           {user && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 3 } }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Box sx={{ display: { xs: 'none', md: 'block' }, textAlign: 'right' }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 800, lineHeight: 1, color: '#fff' }}>
+                    {user.displayName}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#ffd700', fontWeight: 600 }}>
+                    JUGADOR
+                  </Typography>
+                </Box>
                 <Avatar 
                   src={user.photoURL} 
                   sx={{ 
-                    width: 38, 
-                    height: 38, 
-                    border: '2px solid rgba(255, 215, 0, 0.6)',
-                    boxShadow: '0 0 10px rgba(255, 215, 0, 0.2)'
+                    width: { xs: 35, md: 42 }, 
+                    height: { xs: 35, md: 42 }, 
+                    border: '2px solid rgba(255, 215, 0, 0.5)',
+                    boxShadow: '0 0 15px rgba(255, 215, 0, 0.2)'
                   }} 
                 />
-                <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 700, lineHeight: 1, color: '#fff' }}>
-                    {user.displayName}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>
-                    Jugador Oficial
-                  </Typography>
-                </Box>
               </Box>
 
               <Button 
-                variant="outlined" 
-                color="inherit" 
+                variant="contained" 
+                size="small"
                 onClick={onLogout}
-                startIcon={<LogoutIcon />}
                 sx={{ 
-                  borderRadius: '12px',
+                  minWidth: { xs: '40px', md: 'auto' },
+                  borderRadius: '10px',
+                  bgcolor: 'rgba(255, 255, 255, 0.1)',
+                  color: '#fff',
                   textTransform: 'none',
-                  borderColor: 'rgba(255,255,255,0.3)',
-                  fontWeight: 600,
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  fontWeight: 700,
                   '&:hover': {
-                    borderColor: '#fff',
-                    background: 'rgba(255,255,255,0.1)'
+                    background: 'rgba(255, 50, 50, 0.2)',
+                    borderColor: '#ff4444'
                   }
                 }}
               >
-                Salir
+                <Box component="span" sx={{ display: { xs: 'none', md: 'inline' }, mr: 1 }}>Salir</Box>
+                <LogoutIcon sx={{ fontSize: '1.2rem' }} />
               </Button>
             </Box>
           )}
         </Toolbar>
 
-        <Box sx={{ display: "flex", justifyContent: "center" }}>
+        <Box sx={{ display: "flex", justifyContent: "center", pb: 0.5 }}>
           <Tabs
             value={view}
             onChange={handleTabChange}
-            textColor="inherit"
+            centered
             sx={{
+              minHeight: '40px',
               "& .MuiTabs-indicator": {
                 backgroundColor: "#ffd700",
                 height: 3,
-                boxShadow: "0 0 10px rgba(255,215,0,0.5)",
+                borderRadius: '3px 3px 0 0',
+                boxShadow: "0 0 15px rgba(255,215,0,0.8)",
               },
               "& .MuiTab-root": {
-                color: "rgba(255,255,255,0.4)",
-                fontWeight: 700,
-                fontSize: "0.85rem",
-                minHeight: "48px",
+                color: "rgba(255,255,255,0.5)",
+                fontWeight: 800,
+                fontSize: { xs: "0.75rem", md: "0.9rem" },
+                minHeight: "45px",
+                textTransform: 'uppercase',
                 transition: "0.3s",
                 "&.Mui-selected": { color: "#fff" },
+                "&:hover": { color: "rgba(255,255,255,0.8)" }
               },
             }}
           >
@@ -129,13 +133,13 @@ const Header = ({ user, onLogout, view, setView }) => {
               value="partidos"
               icon={<SportsSoccerIcon sx={{ fontSize: "1.2rem" }} />}
               iconPosition="start"
-              label="Partidos"
+              label="Fixture"
             />
             <Tab
               value="ranking"
               icon={<LeaderboardIcon sx={{ fontSize: "1.2rem" }} />}
               iconPosition="start"
-              label="Ranking"
+              label="Posiciones"
             />
           </Tabs>
         </Box>
@@ -145,4 +149,3 @@ const Header = ({ user, onLogout, view, setView }) => {
 };
 
 export default Header;
-

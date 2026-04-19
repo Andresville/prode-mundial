@@ -1,47 +1,20 @@
-import { Box, Typography, Card } from '@mui/material';
+import { Box, Typography, Paper } from '@mui/material';
 import Partido from './Partido';
 
-const ContenedorGrupo = ({ nombre, equipos, partidos, predicciones, onInputChange }) => {
+const ContenedorGrupo = ({ nombre, partidos, predicciones, onInputChange }) => {
   return (
-    <Card sx={{ mb: 3, borderRadius: 2, overflow: 'hidden', boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
-      <Box sx={{ 
-        bgcolor: '#1a237e', 
-        color: 'white', 
-        p: 1.5, 
-        display: 'flex', 
-        flexDirection: { xs: 'column', sm: 'row' },
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        gap: 1
-      }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 'bold', textTransform: 'uppercase' }}>
-          {nombre}
+    <Paper elevation={0} sx={{ 
+      borderRadius: 5, overflow: 'hidden',
+      background: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(20px)',
+      border: '1px solid rgba(255, 255, 255, 0.1)', color: 'white'
+    }}>
+      <Box sx={{ p: 2, textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+        <Typography variant="h6" sx={{ fontWeight: 800, color: '#ffd700', letterSpacing: 1 }}>
+          {nombre.toUpperCase()}
         </Typography>
-
-        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
-          {equipos.map((eq) => (
-            <Box 
-              key={eq.name} 
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 0.5, 
-                bgcolor: 'rgba(255,255,255,0.1)', 
-                px: 1, 
-                py: 0.2, 
-                borderRadius: 1 
-              }}
-            >
-              <img src={eq.crest} alt="" style={{ width: '18px', height: 'auto' }} />
-              <Typography sx={{ fontSize: '0.7rem', fontWeight: 500 }}>
-                {eq.name}
-              </Typography>
-            </Box>
-          ))}
-        </Box>
       </Box>
 
-      <Box sx={{ bgcolor: 'white' }}>
+      <Box sx={{ p: { xs: 0.5, sm: 1 } }}>
         {partidos.map((p, index) => (
           <Partido
             key={p.id}
@@ -52,7 +25,7 @@ const ContenedorGrupo = ({ nombre, equipos, partidos, predicciones, onInputChang
           />
         ))}
       </Box>
-    </Card>
+    </Paper>
   );
 };
 
